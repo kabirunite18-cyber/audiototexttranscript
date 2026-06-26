@@ -41,7 +41,7 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
-  const [lines, setLines] = useState<string[]>([]);
+  const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -77,7 +77,7 @@ function Index() {
         model === "fast" ? "openai/gpt-4o-mini-transcribe" : "openai/gpt-4o-transcribe",
       );
       const result = await run({ data: fd });
-      setLines(result.lines.length ? result.lines : [result.text].filter(Boolean));
+      setLines(result.lines.length ? result.lines : (result.text ? [{ time: "", text: result.text }] : []));
       toast.success("Transcription complete");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Transcription failed");
@@ -86,13 +86,16 @@ function Index() {
     }
   };
 
+  const formatLine = (l: { time: string; text: string }) =>
+    l.time ? `[${l.time}] ${l.text}` : l.text;
+
   const copyAll = () => {
-    navigator.clipboard.writeText(lines.join("\n"));
+    navigator.clipboard.writeText(lines.map(formatLine).join("\n\n"));
     toast.success("Copied to clipboard");
   };
 
   const download = () => {
-    const blob = new Blob([lines.map((l, i) => `${i + 1}. ${l}`).join("\n")], {
+    const blob = new Blob([lines.map(formatLine).join("\n\n")], {
       type: "text/plain",
     });
     const url = URL.createObjectURL(blob);
@@ -218,16 +221,16 @@ function Index() {
                 </Button>
               </div>
             </div>
-            <ol className="space-y-2">
+            <ol className="space-y-3">
               {lines.map((line, i) => (
                 <li
                   key={i}
                   className="flex gap-3 rounded-md px-2 py-1.5 hover:bg-muted/50 transition-colors"
                 >
-                  <span className="shrink-0 select-none text-xs font-mono text-muted-foreground tabular-nums pt-0.5 w-8 text-right">
-                    {i + 1}
+                  <span className="shrink-0 select-none text-xs font-mono text-primary tabular-nums pt-0.5 w-14">
+                    [{line.time || "—"}]
                   </span>
-                  <span className="text-sm leading-relaxed">{line}</span>
+                  <span className="text-sm leading-relaxed">{line.text}</span>
                 </li>
               ))}
             </ol>
