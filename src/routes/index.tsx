@@ -42,8 +42,25 @@ function Index() {
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
+  const [view, setView] = useState<"segments" | "paragraphs">("segments");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Group consecutive lines into paragraphs (~4 lines each) keeping the first timestamp.
+  const paragraphs = (() => {
+    const out: { time: string; text: string }[] = [];
+    const SIZE = 4;
+    for (let i = 0; i < lines.length; i += SIZE) {
+      const chunk = lines.slice(i, i + SIZE);
+      out.push({
+        time: chunk[0]?.time || "",
+        text: chunk.map((l) => l.text).join(" "),
+      });
+    }
+    return out;
+  })();
+
+  const displayed = view === "paragraphs" ? paragraphs : lines;
 
   const onFile = useCallback((f: File | null) => {
     if (!f) return;
@@ -90,12 +107,12 @@ function Index() {
     l.time ? `[${l.time}] ${l.text}` : l.text;
 
   const copyAll = () => {
-    navigator.clipboard.writeText(lines.map(formatLine).join("\n\n"));
+    navigator.clipboard.writeText(displayed.map(formatLine).join("\n\n"));
     toast.success("Copied to clipboard");
   };
 
   const download = () => {
-    const blob = new Blob([lines.map(formatLine).join("\n\n")], {
+    const blob = new Blob([displayed.map(formatLine).join("\n\n")], {
       type: "text/plain",
     });
     const url = URL.createObjectURL(blob);
@@ -210,9 +227,31 @@ function Index() {
         {/* Output */}
         {lines.length > 0 && (
           <div className="mt-8 rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-lg font-semibold">Transcript</h2>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-lg border p-0.5 bg-muted/40">
+                  <button
+                    type="button"
+                    onClick={() => setView("segments")}
+                    className={cn(
+                      "px-3 py-1 text-xs rounded-md transition-colors",
+                      view === "segments" ? "bg-background shadow-sm font-medium" : "text-muted-foreground",
+                    )}
+                  >
+                    Segments
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setView("paragraphs")}
+                    className={cn(
+                      "px-3 py-1 text-xs rounded-md transition-colors",
+                      view === "paragraphs" ? "bg-background shadow-sm font-medium" : "text-muted-foreground",
+                    )}
+                  >
+                    Paragraphs
+                  </button>
+                </div>
                 <Button variant="outline" size="sm" onClick={copyAll}>
                   <Copy className="size-3.5" /> Copy
                 </Button>
@@ -221,8 +260,8 @@ function Index() {
                 </Button>
               </div>
             </div>
-            <ol className="space-y-3">
-              {lines.map((line, i) => (
+            <ol className={view === "paragraphs" ? "space-y-5" : "space-y-3"}>
+              {displayed.map((line, i) => (
                 <li
                   key={i}
                   className="flex gap-3 rounded-md px-2 py-1.5 hover:bg-muted/50 transition-colors"
