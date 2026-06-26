@@ -42,8 +42,25 @@ function Index() {
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
+  const [view, setView] = useState<"segments" | "paragraphs">("segments");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Group consecutive lines into paragraphs (~4 lines each) keeping the first timestamp.
+  const paragraphs = (() => {
+    const out: { time: string; text: string }[] = [];
+    const SIZE = 4;
+    for (let i = 0; i < lines.length; i += SIZE) {
+      const chunk = lines.slice(i, i + SIZE);
+      out.push({
+        time: chunk[0]?.time || "",
+        text: chunk.map((l) => l.text).join(" "),
+      });
+    }
+    return out;
+  })();
+
+  const displayed = view === "paragraphs" ? paragraphs : lines;
 
   const onFile = useCallback((f: File | null) => {
     if (!f) return;
