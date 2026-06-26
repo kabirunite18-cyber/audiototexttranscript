@@ -110,11 +110,9 @@ function Index() {
     navigator.clipboard.writeText(displayed.map(formatLine).join("\n\n"));
     toast.success("Copied to clipboard");
   };
-    toast.success("Copied to clipboard");
-  };
 
   const download = () => {
-    const blob = new Blob([lines.map(formatLine).join("\n\n")], {
+    const blob = new Blob([displayed.map(formatLine).join("\n\n")], {
       type: "text/plain",
     });
     const url = URL.createObjectURL(blob);
