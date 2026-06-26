@@ -41,7 +41,7 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
-  const [lines, setLines] = useState<string[]>([]);
+  const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
