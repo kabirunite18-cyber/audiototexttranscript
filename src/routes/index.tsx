@@ -86,13 +86,16 @@ function Index() {
     }
   };
 
+  const formatLine = (l: { time: string; text: string }) =>
+    l.time ? `[${l.time}] ${l.text}` : l.text;
+
   const copyAll = () => {
-    navigator.clipboard.writeText(lines.join("\n"));
+    navigator.clipboard.writeText(lines.map(formatLine).join("\n\n"));
     toast.success("Copied to clipboard");
   };
 
   const download = () => {
-    const blob = new Blob([lines.map((l, i) => `${i + 1}. ${l}`).join("\n")], {
+    const blob = new Blob([lines.map(formatLine).join("\n\n")], {
       type: "text/plain",
     });
     const url = URL.createObjectURL(blob);
