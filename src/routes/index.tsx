@@ -77,7 +77,7 @@ function Index() {
         model === "fast" ? "openai/gpt-4o-mini-transcribe" : "openai/gpt-4o-transcribe",
       );
       const result = await run({ data: fd });
-      setLines(result.lines.length ? result.lines : [result.text].filter(Boolean));
+      setLines(result.lines.length ? result.lines : (result.text ? [{ time: "", text: result.text }] : []));
       toast.success("Transcription complete");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Transcription failed");
