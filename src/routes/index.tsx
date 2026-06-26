@@ -221,16 +221,16 @@ function Index() {
                 </Button>
               </div>
             </div>
-            <ol className="space-y-2">
+            <ol className="space-y-3">
               {lines.map((line, i) => (
                 <li
                   key={i}
                   className="flex gap-3 rounded-md px-2 py-1.5 hover:bg-muted/50 transition-colors"
                 >
-                  <span className="shrink-0 select-none text-xs font-mono text-muted-foreground tabular-nums pt-0.5 w-8 text-right">
-                    {i + 1}
+                  <span className="shrink-0 select-none text-xs font-mono text-primary tabular-nums pt-0.5 w-14">
+                    [{line.time || "—"}]
                   </span>
-                  <span className="text-sm leading-relaxed">{line}</span>
+                  <span className="text-sm leading-relaxed">{line.text}</span>
                 </li>
               ))}
             </ol>
