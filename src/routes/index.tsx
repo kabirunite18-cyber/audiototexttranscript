@@ -107,7 +107,9 @@ function Index() {
     l.time ? `[${l.time}] ${l.text}` : l.text;
 
   const copyAll = () => {
-    navigator.clipboard.writeText(lines.map(formatLine).join("\n\n"));
+    navigator.clipboard.writeText(displayed.map(formatLine).join("\n\n"));
+    toast.success("Copied to clipboard");
+  };
     toast.success("Copied to clipboard");
   };
 
