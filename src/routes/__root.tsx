@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Video Transcriber — Line by Line" },
+      { name: "description", content: "Upload a video/audio and get a clean, line-by-line transcript powered by AI." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Video Transcriber — Line by Line" },
+      { property: "og:description", content: "Upload a video/audio and get a clean, line-by-line transcript powered by AI." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Video Transcriber — Line by Line" },
+      { name: "twitter:description", content: "Upload a video/audio and get a clean, line-by-line transcript powered by AI." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7be80bf9-ad54-423b-9158-71d32419b704/id-preview-f5bd800b--e35f9690-392c-434e-b29c-361bd1b7864a.lovable.app-1782490728641.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7be80bf9-ad54-423b-9158-71d32419b704/id-preview-f5bd800b--e35f9690-392c-434e-b29c-361bd1b7864a.lovable.app-1782490728641.png" },
     ],
     links: [
       {
