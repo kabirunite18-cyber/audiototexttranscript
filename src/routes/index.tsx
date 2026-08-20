@@ -39,12 +39,14 @@ const MAX_BYTES = 100 * 1024 * 1024; // 100MB
 function Index() {
   const run = useServerFn(transcribeVideo);
   const [file, setFile] = useState<File | null>(null);
+  const [duration, setDuration] = useState(0);
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
   const [view, setView] = useState<"segments" | "paragraphs">("segments");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
 
   // Group consecutive lines into paragraphs (~4 lines each) keeping the first timestamp.
   const paragraphs = (() => {
