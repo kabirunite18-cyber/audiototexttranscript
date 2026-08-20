@@ -80,11 +80,12 @@ function Index() {
   }, []);
 
 
-  const onDrop = (e: React.DragEvent) => {
+  const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    onFile(e.dataTransfer.files?.[0] ?? null);
+    await onFile(e.dataTransfer.files?.[0] ?? null);
   };
+
 
   const transcribe = async () => {
     if (!file) return;
@@ -93,10 +94,8 @@ function Index() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append(
-        "model",
-        model === "fast" ? "openai/gpt-4o-mini-transcribe" : "openai/gpt-4o-transcribe",
-      );
+      fd.append("duration", String(duration));
+      fd.append("model", model);
       const result = await run({ data: fd });
       setLines(result.lines.length ? result.lines : (result.text ? [{ time: "", text: result.text }] : []));
       toast.success("Transcription complete");
@@ -106,6 +105,7 @@ function Index() {
       setBusy(false);
     }
   };
+
 
   const formatLine = (l: { time: string; text: string }) =>
     l.time ? `[${l.time}] ${l.text}` : l.text;
@@ -162,7 +162,7 @@ function Index() {
               type="file"
               accept="video/*,audio/*"
               className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+              onChange={async (e) => { await onFile(e.target.files?.[0] ?? null); }}
             />
             {file ? (
               <div className="flex items-center justify-center gap-3">
