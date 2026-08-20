@@ -64,7 +64,7 @@ function Index() {
 
   const displayed = view === "paragraphs" ? paragraphs : lines;
 
-  const onFile = useCallback((f: File | null) => {
+  const onFile = useCallback(async (f: File | null) => {
     if (!f) return;
     if (!ACCEPTED.some((p) => f.type.startsWith(p))) {
       toast.error("Please upload a video or audio file.");
@@ -75,8 +75,10 @@ function Index() {
       return;
     }
     setFile(f);
+    setDuration(await getMediaDuration(f));
     setLines([]);
   }, []);
+
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
