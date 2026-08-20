@@ -39,12 +39,14 @@ const MAX_BYTES = 100 * 1024 * 1024; // 100MB
 function Index() {
   const run = useServerFn(transcribeVideo);
   const [file, setFile] = useState<File | null>(null);
+  const [duration, setDuration] = useState(0);
   const [model, setModel] = useState<"fast" | "accurate">("fast");
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState<{ time: string; text: string }[]>([]);
   const [view, setView] = useState<"segments" | "paragraphs">("segments");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
 
   // Group consecutive lines into paragraphs (~4 lines each) keeping the first timestamp.
   const paragraphs = (() => {
@@ -62,7 +64,7 @@ function Index() {
 
   const displayed = view === "paragraphs" ? paragraphs : lines;
 
-  const onFile = useCallback((f: File | null) => {
+  const onFile = useCallback(async (f: File | null) => {
     if (!f) return;
     if (!ACCEPTED.some((p) => f.type.startsWith(p))) {
       toast.error("Please upload a video or audio file.");
@@ -73,14 +75,17 @@ function Index() {
       return;
     }
     setFile(f);
+    setDuration(await getMediaDuration(f));
     setLines([]);
   }, []);
 
-  const onDrop = (e: React.DragEvent) => {
+
+  const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    onFile(e.dataTransfer.files?.[0] ?? null);
+    await onFile(e.dataTransfer.files?.[0] ?? null);
   };
+
 
   const transcribe = async () => {
     if (!file) return;
@@ -89,10 +94,8 @@ function Index() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append(
-        "model",
-        model === "fast" ? "openai/gpt-4o-mini-transcribe" : "openai/gpt-4o-transcribe",
-      );
+      fd.append("duration", String(duration));
+      fd.append("model", model);
       const result = await run({ data: fd });
       setLines(result.lines.length ? result.lines : (result.text ? [{ time: "", text: result.text }] : []));
       toast.success("Transcription complete");
@@ -102,6 +105,7 @@ function Index() {
       setBusy(false);
     }
   };
+
 
   const formatLine = (l: { time: string; text: string }) =>
     l.time ? `[${l.time}] ${l.text}` : l.text;
@@ -158,7 +162,7 @@ function Index() {
               type="file"
               accept="video/*,audio/*"
               className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+              onChange={async (e) => { await onFile(e.target.files?.[0] ?? null); }}
             />
             {file ? (
               <div className="flex items-center justify-center gap-3">
@@ -304,3 +308,30 @@ function ModeCard({
     </button>
   );
 }
+
+function getMediaDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const media = file.type.startsWith("video/")
+      ? document.createElement("video")
+      : document.createElement("audio");
+    const timer = setTimeout(() => {
+      URL.revokeObjectURL(url);
+      resolve(0);
+    }, 5000);
+
+    media.onloadedmetadata = () => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(media.duration) ? media.duration : 0);
+    };
+    media.onerror = () => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(url);
+      resolve(0);
+    };
+    media.src = url;
+    media.load();
+  });
+}
+
