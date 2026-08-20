@@ -308,3 +308,30 @@ function ModeCard({
     </button>
   );
 }
+
+function getMediaDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const media = file.type.startsWith("video/")
+      ? document.createElement("video")
+      : document.createElement("audio");
+    const timer = setTimeout(() => {
+      URL.revokeObjectURL(url);
+      resolve(0);
+    }, 5000);
+
+    media.onloadedmetadata = () => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(media.duration) ? media.duration : 0);
+    };
+    media.onerror = () => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(url);
+      resolve(0);
+    };
+    media.src = url;
+    media.load();
+  });
+}
+
